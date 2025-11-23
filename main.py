@@ -1,21 +1,24 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from parser import parse_address
+
 
 class AddressInput(BaseModel):
     address: str
 
-app = FastAPI()
-@app.post("/parse") #endpoint
-def libpostal(data: AddressInput): #user parameter
-    return {
-        "The address": data.address,
-        "Parsed": {
-            "house_number": data.house_number,
-            "street_number": data.street_number,
-            "postal_code": data.postal_code,
-            "district": data.district,
-            "city": data.city,
-            "country": data.country,
-        }
-    } #what we return
 
+app = FastAPI()
+
+
+@app.post("/parse")
+def libpostal(data: AddressInput):
+    result = parse_address(data.address)
+
+    parsed = {}
+    for value, label in result:
+        parsed[label] = value
+
+    return {
+        "original": data.address,
+        "parsed": parsed
+    }
